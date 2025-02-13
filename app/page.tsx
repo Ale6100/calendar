@@ -18,15 +18,15 @@ export default function Home() {
         events={[
           {
             id: "1",
-            start: new Date("2025-02-12T09:30:00Z"),
-            end: new Date("2024-02-12T14:30:00Z"),
+            start: new Date("2024-08-26T09:30:00Z"),
+            end: new Date("2024-08-26T14:30:00Z"),
             title: "event A",
             color: "pink",
           },
           {
             id: "2",
-            start: new Date("2025-02-14T10:00:00Z"),
-            end: new Date("2025-02-14T10:30:00Z"),
+            start: new Date("2024-08-26T10:00:00Z"),
+            end: new Date("2024-08-26T10:30:00Z"),
             title: "event B",
             color: "blue",
           },
@@ -34,14 +34,29 @@ export default function Home() {
       >
         <div className="h-dvh py-6 flex flex-col">
           <div className="flex px-6 items-center gap-2 mb-6">
-            <CalendarViewTrigger view="week" className="aria-[current=true]:bg-accent">
-              Semana
+            <CalendarViewTrigger
+              className="aria-[current=true]:bg-accent"
+              view="day"
+            >
+              Day
             </CalendarViewTrigger>
-            <CalendarViewTrigger className="aria-[current=true]:bg-accent" view="day">
-              Día
+            <CalendarViewTrigger
+              view="week"
+              className="aria-[current=true]:bg-accent"
+            >
+              Week
             </CalendarViewTrigger>
-            <CalendarViewTrigger view="month" className="aria-[current=true]:bg-accent">
-              Mes
+            <CalendarViewTrigger
+              view="month"
+              className="aria-[current=true]:bg-accent"
+            >
+              Month
+            </CalendarViewTrigger>
+            <CalendarViewTrigger
+              view="year"
+              className="aria-[current=true]:bg-accent"
+            >
+              Year
             </CalendarViewTrigger>
 
             <span className="flex-1" />
@@ -50,14 +65,14 @@ export default function Home() {
 
             <CalendarPrevTrigger>
               <ChevronLeft size={20} />
-              <span className="sr-only">Anterior</span>
+              <span className="sr-only">Previous</span>
             </CalendarPrevTrigger>
 
-            <CalendarTodayTrigger>Hoy</CalendarTodayTrigger>
+            <CalendarTodayTrigger>Today</CalendarTodayTrigger>
 
             <CalendarNextTrigger>
               <ChevronRight size={20} />
-              <span className="sr-only">Siguiente</span>
+              <span className="sr-only">Next</span>
             </CalendarNextTrigger>
           </div>
 

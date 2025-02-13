@@ -25,7 +25,7 @@ import {
   subWeeks,
   subYears,
 } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale/en-US';
 import {
   ReactNode,
   createContext,
@@ -83,7 +83,7 @@ type ContextType = {
   today: Date;
 };
 
-const Context = createContext<ContextType>({ locale: es } as ContextType);
+const Context = createContext<ContextType>({} as ContextType);
 
 export type CalendarEvent = {
   id: string;
@@ -107,7 +107,7 @@ type CalendarProps = {
 const Calendar = ({
   children,
   defaultDate = new Date(),
-  locale = es,
+  locale = enUS,
   enableHotkeys = true,
   view: _defaultMode = 'month',
   onEventClick,
@@ -167,7 +167,7 @@ const CalendarViewTrigger = forwardRef<
   React.HTMLAttributes<HTMLButtonElement> & {
     view: View;
   }
->(({ children, view, ...props }, ref) => {
+>(({ children, view, ...props }) => {
   const { view: currentView, setView, onChangeView } = useCalendar();
 
   return (
@@ -289,7 +289,7 @@ const CalendarWeekView = () => {
                   'bg-primary text-primary-foreground rounded-full size-6'
               )}
             >
-              {format(date, 'd', { locale })}
+              {format(date, 'd')}
             </span>
           </div>
         ))}
@@ -367,7 +367,7 @@ const CalendarMonthView = () => {
                   isToday(_date) && 'bg-primary text-primary-foreground'
                 )}
               >
-                {format(_date, 'd', { locale })}
+                {format(_date, 'd')}
               </span>
 
               {currentEvents.map((event) => {
@@ -384,7 +384,7 @@ const CalendarMonthView = () => {
                     ></div>
                     <span className="flex-1 truncate">{event.title}</span>
                     <time className="tabular-nums text-muted-foreground/50 text-xs">
-                      {format(event.start, 'HH:mm', { locale })}
+                      {format(event.start, 'HH:mm')}
                     </time>
                   </div>
                 );
@@ -448,7 +448,7 @@ const CalendarYearView = () => {
                         'bg-primary text-primary-foreground rounded-full'
                     )}
                   >
-                    {format(_date, 'd', { locale })}
+                    {format(_date, 'd')}
                   </div>
                 </div>
               );
@@ -572,8 +572,8 @@ const CalendarCurrentDate = () => {
   const { date, view } = useCalendar();
 
   return (
-    <time dateTime={date.toLocaleDateString()} className="tabular-nums">
-      {format(date, view === 'day' ? 'dd MMMM yyyy' : 'MMMM yyyy', { locale: es })}
+    <time dateTime={date.toISOString()} className="tabular-nums">
+      {format(date, view === 'day' ? 'dd MMMM yyyy' : 'MMMM yyyy')}
     </time>
   );
 };
