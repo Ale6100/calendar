@@ -167,7 +167,7 @@ const CalendarViewTrigger = forwardRef<
   React.HTMLAttributes<HTMLButtonElement> & {
     view: View;
   }
->(({ children, view, ...props }) => {
+>(({ children, view, ...props }, ref) => {
   const { view: currentView, setView, onChangeView } = useCalendar();
 
   return (
@@ -572,7 +572,7 @@ const CalendarCurrentDate = () => {
   const { date, view } = useCalendar();
 
   return (
-    <time dateTime={date.toISOString()} className="tabular-nums">
+    <time dateTime={date.toLocaleDateString()} className="tabular-nums">
       {format(date, view === 'day' ? 'dd MMMM yyyy' : 'MMMM yyyy')}
     </time>
   );
