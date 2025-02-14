@@ -1,14 +1,4 @@
-import {
-  Calendar,
-  CalendarCurrentDate,
-  CalendarDayView,
-  CalendarMonthView,
-  CalendarNextTrigger,
-  CalendarPrevTrigger,
-  CalendarTodayTrigger,
-  CalendarViewTrigger,
-  CalendarWeekView,
-} from "@/components/FullCalendar";
+import { Calendar, CalendarDatePickerTrigger, CalendarDayView, CalendarMonthView, CalendarNextTrigger, CalendarPrevTrigger, CalendarViewTrigger, CalendarWeekView } from "@/components/FullCalendar";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Home() {
@@ -25,14 +15,14 @@ export default function Home() {
           },
           {
             id: "2",
-            start: new Date("2025-02-13T10:00:00Z"),
-            end: new Date("2025-02-13T10:30:00Z"),
+            start: new Date("2025-02-12T10:00:00Z"),
+            end: new Date("2025-02-12T10:30:00Z"),
             title: "event B",
             color: "blue",
           },
         ]}
       >
-        <div className="h-dvh py-6 flex flex-col">
+        <div className="py-6 flex flex-col">
           <div className="flex px-6 items-center gap-2 mb-6">
             <CalendarViewTrigger view="week" className="aria-[current=true]:bg-accent">
               Semana
@@ -46,14 +36,12 @@ export default function Home() {
 
             <span className="flex-1" />
 
-            <CalendarCurrentDate />
+            <CalendarDatePickerTrigger />
 
             <CalendarPrevTrigger>
               <ChevronLeft size={20} />
               <span className="sr-only">Anterior</span>
             </CalendarPrevTrigger>
-
-            <CalendarTodayTrigger>Hoy</CalendarTodayTrigger>
 
             <CalendarNextTrigger>
               <ChevronRight size={20} />
@@ -61,7 +49,7 @@ export default function Home() {
             </CalendarNextTrigger>
           </div>
 
-          <div className="flex-1 overflow-auto px-6 relative">
+          <div className="flex-1 px-6">
             <CalendarDayView />
             <CalendarWeekView />
             <CalendarMonthView />

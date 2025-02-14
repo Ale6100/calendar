@@ -3,39 +3,14 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { VariantProps, cva } from 'class-variance-authority';
-import {
-  Locale,
-  addDays,
-  addMonths,
-  addWeeks,
-  addYears,
-  differenceInMinutes,
-  format,
-  getMonth,
-  isSameDay,
-  isSameHour,
-  isSameMonth,
-  isToday,
-  setHours,
-  setMonth,
-  startOfMonth,
-  startOfWeek,
-  subDays,
-  subMonths,
-  subWeeks,
-  subYears,
-} from 'date-fns';
-import { enUS } from 'date-fns/locale/en-US';
-import {
-  ReactNode,
-  createContext,
-  forwardRef,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import { Locale, addDays, addMonths, addWeeks, addYears, differenceInMinutes, format, getMonth, isSameDay, isSameHour, isSameMonth, isToday, setHours, setMonth, startOfMonth, startOfWeek, subDays, subMonths, subWeeks, subYears } from 'date-fns';
+import { es } from 'date-fns/locale/es';
+import { ReactNode, createContext, forwardRef, useCallback, useContext, useMemo, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarBtn } from "@/components/ui/calendar"
+import { capitalize } from '@/app/utils/format';
 
 const monthEventVariants = cva('size-2 rounded-full', {
   variants: {
@@ -89,7 +64,8 @@ export type CalendarEvent = {
   id: string;
   start: Date;
   end: Date;
-  title: string;
+  title: string; //! Lo voy a deprecar y reemplazar por la propiedad data
+  // data: AppointmentsDB; //! Reemplazar por un tipado genérico. Actualmente sólo funciona para la tabla Appointments
   color?: VariantProps<typeof monthEventVariants>['variant'];
 };
 
@@ -107,7 +83,7 @@ type CalendarProps = {
 const Calendar = ({
   children,
   defaultDate = new Date(),
-  locale = enUS,
+  locale = es,
   enableHotkeys = true,
   view: _defaultMode = 'month',
   onEventClick,
@@ -197,7 +173,7 @@ const EventGroup = ({
   return (
     <div className="h-20 border-t last:border-b">
       {events
-        .filter((event) => isSameHour(event.start, hour))
+        .filter(event => isSameHour(event.start, hour))
         .map((event) => {
           const hoursDifference =
             differenceInMinutes(event.end, event.start) / 60;
@@ -243,13 +219,13 @@ const CalendarDayView = () => {
 };
 
 const CalendarWeekView = () => {
-  const { view, date, locale, events } = useCalendar();
+  const { view, date, events } = useCalendar();
 
   const weekDates = useMemo(() => {
     const start = startOfWeek(date, { weekStartsOn: 0 });
     const weekDates = [];
 
-    for (let i = 0; i < 7; i++) {
+    for (let i = 1; i < 6; i++) {
       const day = addDays(start, i);
       const hours = [...Array(24)].map((_, i) => setHours(day, i));
       weekDates.push(hours);
@@ -260,7 +236,7 @@ const CalendarWeekView = () => {
 
   const headerDays = useMemo(() => {
     const daysOfWeek = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 1; i < 6; i++) {
       const result = addDays(startOfWeek(date, { weekStartsOn: 0 }), i);
       daysOfWeek.push(result);
     }
@@ -270,26 +246,16 @@ const CalendarWeekView = () => {
   if (view !== 'week') return null;
 
   return (
-    <div className="flex flex-col relative overflow-auto h-full">
-      <div className="flex sticky top-0 bg-card z-10 border-b mb-3">
-        <div className="w-12"></div>
-        {headerDays.map((date, i) => (
+    <div className="flex flex-col h-full w-full">
+      <div className="flex bg-card border-b mb-3">
+        <span className="w-12 text-center text-sm text-muted-foreground">Hora</span>
+        {headerDays.map(date => (
           <div
             key={date.toString()}
-            className={cn(
-              'text-center flex-1 gap-1 pb-2 text-sm text-muted-foreground flex items-center justify-center',
-              [0, 6].includes(i) && 'text-muted-foreground/50'
-            )}
+            className='text-center flex-1 gap-1 pb-2 text-sm text-muted-foreground flex items-center justify-center'
           >
-            {format(date, 'E', { locale })}
-            <span
-              className={cn(
-                'h-6 grid place-content-center',
-                isToday(date) &&
-                  'bg-primary text-primary-foreground rounded-full size-6'
-              )}
-            >
-              {format(date, 'd')}
+            <span className={cn('', isToday(date) && 'text-primary font-semibold')}>
+              {capitalize(format(date, "EEEE, dd/MM", { locale: es }))}
             </span>
           </div>
         ))}
@@ -298,17 +264,14 @@ const CalendarWeekView = () => {
         <div className="w-fit">
           <TimeTable />
         </div>
-        <div className="grid grid-cols-7 flex-1">
-          {weekDates.map((hours, i) => {
+        <div className="grid grid-cols-5 flex-1">
+          {weekDates.map(hours => {
             return (
               <div
-                className={cn(
-                  'h-full text-sm text-muted-foreground border-l first:border-l-0',
-                  [0, 6].includes(i) && 'bg-muted/50'
-                )}
+                className='h-full text-sm text-muted-foreground border-l first:border-l-0'
                 key={hours[0].toString()}
               >
-                {hours.map((hour) => (
+                {hours.map(hour => (
                   <EventGroup
                     key={hour.toString()}
                     hour={hour}
@@ -499,6 +462,39 @@ const CalendarNextTrigger = forwardRef<
 });
 CalendarNextTrigger.displayName = 'CalendarNextTrigger';
 
+const CalendarDatePickerTrigger = () => {
+  const { date, setDate, view } = useCalendar();
+
+  const dateFormat = view === 'day' ? 'dd MMMM yyyy' : 'MMMM yyyy';
+  const formattedDate = date ? capitalize(format(date, dateFormat, { locale: es })) : <span></span>;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-60 justify-between font-normal",
+            !date && "text-muted-foreground"
+          )}
+        >
+          {formattedDate}
+          <CalendarIcon />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <CalendarBtn
+          locale={es}
+          mode="single"
+          selected={date}
+          onSelect={(d: Date | undefined) => d ? setDate(d) : null}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 const CalendarPrevTrigger = forwardRef<
   HTMLButtonElement,
   React.HTMLAttributes<HTMLButtonElement>
@@ -579,28 +575,16 @@ const CalendarCurrentDate = () => {
 };
 
 const TimeTable = () => {
-  const now = new Date();
-
   return (
     <div className="pr-2 w-12">
       {Array.from(Array(25).keys()).map((hour) => {
         return (
           <div
-            className="text-right relative text-xs text-muted-foreground/50 h-20 last:h-0"
+            className="text-right text-xs text-muted-foreground/50 h-20 flex items-center justify-center "
             key={hour}
           >
-            {now.getHours() === hour && (
-              <div
-                className="absolute z- left-full translate-x-2 w-dvw h-[2px] bg-red-500"
-                style={{
-                  top: `${(now.getMinutes() / 60) * 100}%`,
-                }}
-              >
-                <div className="size-2 rounded-full bg-red-500 absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2"></div>
-              </div>
-            )}
-            <p className="top-0 -translate-y-1/2">
-              {hour === 24 ? 0 : hour}:00
+            <p className="">
+              {hour === 24 ? 0 : hour}:00hs
             </p>
           </div>
         );
@@ -642,6 +626,7 @@ export {
   CalendarMonthView,
   CalendarNextTrigger,
   CalendarPrevTrigger,
+  CalendarDatePickerTrigger,
   CalendarTodayTrigger,
   CalendarViewTrigger,
   CalendarWeekView,
