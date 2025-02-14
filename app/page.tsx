@@ -1,4 +1,4 @@
-import { Calendar, CalendarDatePickerTrigger, CalendarDayView, CalendarMonthView, CalendarNextTrigger, CalendarPrevTrigger, CalendarViewTrigger, CalendarWeekView } from "@/components/FullCalendar";
+import { ActualMonthView, Calendar, CalendarDatePickerTrigger, CalendarDayView, CalendarMonthView, CalendarNextTrigger, CalendarPrevTrigger, CalendarViewTrigger, CalendarWeekView } from "@/components/FullCalendar";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Home() {
@@ -8,17 +8,15 @@ export default function Home() {
         events={[
           {
             id: "1",
-            start: new Date("2025-02-12T09:30:00Z"),
-            end: new Date("2025-02-12T14:30:00Z"),
+            start: new Date("2025-02-14T09:00:00"),
+            end: new Date("2025-02-14T14:00:00"),
             title: "event A",
-            color: "pink",
           },
           {
             id: "2",
-            start: new Date("2025-02-12T10:00:00Z"),
-            end: new Date("2025-02-12T10:30:00Z"),
-            title: "event B",
-            color: "blue",
+            start: new Date("2025-02-14T15:00:00"),
+            end: new Date("2025-02-14T19:30:00"),
+            title: "event B asd asd adas sad asd asd asd as",
           },
         ]}
       >
@@ -50,6 +48,7 @@ export default function Home() {
           </div>
 
           <div className="flex-1 px-6">
+            <ActualMonthView />
             <CalendarDayView />
             <CalendarWeekView />
             <CalendarMonthView />
