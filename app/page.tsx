@@ -1,4 +1,5 @@
-import { ActualMonthView, Calendar, CalendarDatePickerTrigger, CalendarDayView, CalendarMonthView, CalendarNextTrigger, CalendarPrevTrigger, CalendarViewTrigger, CalendarWeekView } from "@/components/FullCalendar";
+import { ActualMonthView, Calendar, CalendarDatePickerTrigger, CalendarDayView, CalendarMonthView, CalendarNextTrigger, CalendarNoView, CalendarPrevTrigger, CalendarViewTrigger, CalendarWeekView } from "@/components/FullCalendar";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Home() {
@@ -21,16 +22,31 @@ export default function Home() {
         ]}
       >
         <div className="py-6 flex flex-col">
-          <div className="flex px-6 items-center gap-2 mb-6">
-            <CalendarViewTrigger view="week" className="aria-[current=true]:bg-accent">
-              Semana
-            </CalendarViewTrigger>
-            <CalendarViewTrigger className="aria-[current=true]:bg-accent" view="day">
-              Día
-            </CalendarViewTrigger>
-            <CalendarViewTrigger view="month" className="aria-[current=true]:bg-accent">
-              Mes
-            </CalendarViewTrigger>
+          <div className="flex px-6 items-center gap-3 mb-6">
+            <TabsList className="flex gap-2">
+              <TabsTrigger value="week" className='p-0'>
+                <CalendarViewTrigger view="week" className="py-1 px-2">
+                  Semana
+                </CalendarViewTrigger>
+              </TabsTrigger>
+
+              <TabsTrigger value="day" className='p-0'>
+                <CalendarViewTrigger view="day" className="py-1 px-2">
+                  Día
+                </CalendarViewTrigger>
+              </TabsTrigger>
+
+              <TabsTrigger value="month" className='p-0'>
+                <CalendarViewTrigger view="month" className="py-1 px-2">
+                  Mes
+                </CalendarViewTrigger>
+              </TabsTrigger>
+              <TabsTrigger value="no_view" className='p-0'>
+                <CalendarViewTrigger view="no_view" className="py-1 px-2">
+                  Historial
+                </CalendarViewTrigger>
+              </TabsTrigger>
+            </TabsList>
 
             <span className="flex-1" />
 
@@ -52,6 +68,9 @@ export default function Home() {
             <CalendarDayView />
             <CalendarWeekView />
             <CalendarMonthView />
+            <CalendarNoView>
+              Acá va un componente personalizado en caso de que no se desee mostrar un calendario. Luego pienso poner una tabla como ejemplo.
+            </CalendarNoView>
           </div>
         </div>
       </Calendar>

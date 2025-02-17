@@ -5,12 +5,13 @@ import { cn } from '@/lib/utils';
 import { VariantProps, cva } from 'class-variance-authority';
 import { Locale, addDays, addMonths, addWeeks, addYears, differenceInMinutes, format, isSameDay, isSameHour, isSameMonth, isToday, setHours, startOfMonth, startOfWeek, subDays, subMonths, subWeeks, subYears } from 'date-fns';
 import { es } from 'date-fns/locale/es';
-import { ReactNode, createContext, forwardRef, useCallback, useContext, useMemo, useState } from 'react';
+import { ReactNode, createContext, forwardRef, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar as CalendarBtn } from "@/components/ui/calendar"
 import { capitalize } from '@/app/utils/format';
+import { Tabs, TabsContent } from './ui/tabs';
 
 const monthEventVariants = cva('', {
   variants: {
@@ -27,7 +28,7 @@ const monthEventVariants = cva('', {
   },
 });
 
-type View = 'day' | 'week' | 'month' | 'year';
+type View = 'no_view' | 'day' | 'week' | 'month' | 'year';
 
 type ContextType = {
   view: View;
@@ -70,7 +71,7 @@ const Calendar = ({
   defaultDate = new Date(),
   locale = es,
   enableHotkeys = true,
-  view: _defaultMode = 'month',
+  view: _defaultMode = 'no_view',
   onEventClick,
   events: defaultEvents = [],
   onChangeView,
@@ -116,7 +117,9 @@ const Calendar = ({
         today: new Date(),
       }}
     >
-      {children}
+      <Tabs defaultValue="no_view">
+        {children}
+      </Tabs>
     </Context.Provider>
   );
 };
@@ -124,18 +127,15 @@ const Calendar = ({
 export const useCalendar = () => useContext(Context);
 
 const CalendarViewTrigger = forwardRef<
-  HTMLButtonElement,
-  React.HTMLAttributes<HTMLButtonElement> & {
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
     view: View;
   }
 >(({ children, view, ...props }, ref) => {
-  const { view: currentView, setView, onChangeView } = useCalendar();
+  const { setView, onChangeView } = useCalendar();
 
   return (
-    <Button
-      aria-current={currentView === view}
-      size="sm"
-      variant="ghost"
+    <div
       {...props}
       onClick={() => {
         setView(view);
@@ -143,7 +143,7 @@ const CalendarViewTrigger = forwardRef<
       }}
     >
       {children}
-    </Button>
+    </div>
   );
 });
 CalendarViewTrigger.displayName = 'CalendarViewTrigger';
@@ -183,7 +183,9 @@ const EventGroup = ({
 };
 
 const ActualMonthView = () => {
-  const { date } = useCalendar();
+  const { view, date } = useCalendar();
+
+  if (view === 'no_view') return null;
 
   return (
     <div className="flex justify-center border-2 py-1">
@@ -191,6 +193,22 @@ const ActualMonthView = () => {
     </div>
   );
 };
+
+type CalendarNoViewProps = {
+  children: ReactNode;
+};
+
+const CalendarNoView = ({ children }: CalendarNoViewProps) => {
+  const { view } = useCalendar();
+
+  if (view !== 'no_view') return null;
+
+  return (
+    <TabsContent value="no_view">
+      { children }
+    </TabsContent>
+  )
+}
 
 const CalendarDayView = () => {
   const { view, events, date } = useCalendar();
@@ -200,27 +218,29 @@ const CalendarDayView = () => {
   const hours = [...Array(24)].map((_, i) => setHours(date, i));
 
   return (
-    <div className="flex flex-col">
-      <div className="flex bg-card border-b border-x-2 items-center">
-        <span className="w-12 text-center text-sm text-muted-foreground">Hora</span>
-        <div
-            key={date.toString()}
-            className='my-2 text-center flex-1 gap-1 text-sm text-muted-foreground flex items-center justify-center'
-          >
-            <span className={cn('', isToday(date) && 'text-primary font-semibold')}>
-              {capitalize(format(date, "EEEE, dd/MM", { locale: es }))}
-            </span>
+    <TabsContent value="day">
+      <div className="flex flex-col">
+        <div className="flex bg-card border-b border-x-2 items-center">
+          <span className="w-12 text-center text-sm text-muted-foreground">Hora</span>
+          <div
+              key={date.toString()}
+              className='my-2 text-center flex-1 gap-1 text-sm text-muted-foreground flex items-center justify-center'
+            >
+              <span className={cn('', isToday(date) && 'text-primary font-semibold')}>
+                {capitalize(format(date, "EEEE, dd/MM", { locale: es }))}
+              </span>
+            </div>
+        </div>
+        <div className='flex border-x-2 border-b-2'>
+          <TimeTable />
+          <div className="flex-1">
+            {hours.map(hour => (
+              <EventGroup key={hour.toString()} hour={hour} events={events} />
+            ))}
           </div>
-      </div>
-      <div className='flex border-x-2 border-b-2'>
-        <TimeTable />
-        <div className="flex-1">
-          {hours.map(hour => (
-            <EventGroup key={hour.toString()} hour={hour} events={events} />
-          ))}
         </div>
       </div>
-    </div>
+    </TabsContent>
   );
 };
 
@@ -252,44 +272,46 @@ const CalendarWeekView = () => {
   if (view !== 'week') return null;
 
   return (
-    <div className="flex flex-col">
-      <div className="flex bg-card border-b border-x-2 items-center">
-        <span className="w-12 text-center text-sm text-muted-foreground">Hora</span>
-        {headerDays.map(date => (
-          <div
-            key={date.toString()}
-            className='my-2 text-center flex-1 gap-1 text-sm text-muted-foreground flex items-center justify-center'
-          >
-            <span className={cn('', isToday(date) && 'text-primary font-semibold')}>
-              {capitalize(format(date, "EEEE, dd/MM", { locale: es }))}
-            </span>
+    <TabsContent value="week">
+      <div className="flex flex-col">
+        <div className="flex bg-card border-b border-x-2 items-center">
+          <span className="w-12 text-center text-sm text-muted-foreground">Hora</span>
+          {headerDays.map(date => (
+            <div
+              key={date.toString()}
+              className='my-2 text-center flex-1 gap-1 text-sm text-muted-foreground flex items-center justify-center'
+            >
+              <span className={cn('', isToday(date) && 'text-primary font-semibold')}>
+                {capitalize(format(date, "EEEE, dd/MM", { locale: es }))}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-1 border-x-2 border-b-2">
+          <div className="w-fit">
+            <TimeTable />
           </div>
-        ))}
-      </div>
-      <div className="flex flex-1 border-x-2 border-b-2">
-        <div className="w-fit">
-          <TimeTable />
-        </div>
-        <div className="grid grid-cols-5 flex-1">
-          {weekDates.map(hours => {
-            return (
-              <div
-                className='h-full text-sm text-muted-foreground border-l first:border-l-0'
-                key={hours[0].toString()}
-              >
-                {hours.map(hour => (
-                  <EventGroup
-                    key={hour.toString()}
-                    hour={hour}
-                    events={events}
-                  />
-                ))}
-              </div>
-            );
-          })}
+          <div className="grid grid-cols-5 flex-1">
+            {weekDates.map(hours => {
+              return (
+                <div
+                  className='h-full text-sm text-muted-foreground border-l first:border-l-0'
+                  key={hours[0].toString()}
+                >
+                  {hours.map(hour => (
+                    <EventGroup
+                      key={hour.toString()}
+                      hour={hour}
+                      events={events}
+                    />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </TabsContent>
   );
 };
 
@@ -302,59 +324,62 @@ const CalendarMonthView = () => {
   if (view !== 'month') return null;
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="grid grid-cols-7 gap-px border-x-2">
-        {weekDays.map((day, i) => (
-          <div
-            key={day}
-            className={cn(
-              'my-2 text-center text-sm text-muted-foreground ',
-              [0, 6].includes(i) && 'text-muted-foreground/50'
-            )}
-          >
-            {day.at(0)}
-          </div>
-        ))}
-      </div>
-      <div className="grid flex-1 auto-rows-fr p-px grid-cols-7 gap-px">
-        {monthDates.map(d => {
-          const currentEvents = events.filter(event => isSameDay(event.start, d));
-
-          return (
+    <TabsContent value="month">
+      <div className="h-full flex flex-col">
+        <div className="grid grid-cols-7 gap-px border-x-2">
+          {weekDays.map((day, i) => (
             <div
+              key={day}
               className={cn(
-                'p-2 ring-1 text-sm ring-border flex flex-col gap-1',
-                !isSameMonth(date, d) && 'text-muted-foreground/50'
+                'my-2 text-center text-sm text-muted-foreground ',
+                [0, 6].includes(i) && 'text-muted-foreground/50'
               )}
-              key={d.toString()}
             >
-              <div className="flex justify-center">
-                <span
-                  className={cn(
-                    'size-6 grid place-items-center text-xs rounded-full mb-1 sticky top-0',
-                    isToday(d) && 'font-semibold text-primary'
-                  )}
-                >
-                  {format(d, 'd')}
-                </span>
-              </div>
-
-              {currentEvents.map(event => {
-                return (
-                  <div
-                    key={event.id}
-                    className={cn("relative px-1 rounded text-sm flex items-center gap-1 text-white bg-blue-500")}
-                  >
-                    <span className="flex-1 truncate">{event.title}</span>
-                    <span className='absolute right-1'>+2</span>
-                  </div>
-                );
-              })}
+              {day.at(0)}
             </div>
-          );
-        })}
+          ))}
+        </div>
+        <div className="grid flex-1 auto-rows-fr p-px grid-cols-7 gap-px">
+          {monthDates.map(d => {
+            const currentEvents = events.filter(event => isSameDay(event.start, d));
+
+            return (
+              <div
+                className={cn(
+                  'p-2 ring-1 text-sm ring-border flex flex-col gap-1',
+                  !isSameMonth(date, d) && 'text-muted-foreground/50'
+                )}
+                key={d.toString()}
+              >
+                <div className="flex justify-center">
+                  <span
+                    className={cn(
+                      'size-6 grid place-items-center text-xs rounded-full mb-1 sticky top-0',
+                      isToday(d) && 'font-semibold text-primary'
+                    )}
+                  >
+                    {format(d, 'd')}
+                  </span>
+                </div>
+
+                {currentEvents.map(event => {
+                  return (
+                    <div
+                      key={event.id}
+                      className={cn("relative px-1 rounded text-sm flex items-center gap-1 text-white bg-blue-500")}
+                    >
+                      <span className="flex-1 truncate">{event.title}</span>
+                      <span className='absolute right-1'>+2</span>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+    </TabsContent>
   );
 };
 
@@ -558,6 +583,7 @@ export {
   Calendar,
   CalendarCurrentDate,
   ActualMonthView,
+  CalendarNoView,
   CalendarDayView,
   CalendarMonthView,
   CalendarNextTrigger,
